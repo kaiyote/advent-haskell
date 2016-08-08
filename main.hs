@@ -2,6 +2,7 @@ module Main where
 
 import Data.Text (strip, unpack, pack)
 import Data.List (elemIndex, sort)
+import Data.Set (fromList, size)
 import Data.Maybe (fromMaybe)
 
 main :: IO ()
@@ -12,6 +13,8 @@ main = do
   day2Input <- readFile "./input/day2.txt"
   putStrLn $ "Day 2 Part 1: " ++ show (day2Part1 day2Input)
   putStrLn $ "Day 2 Part 2: " ++ show (day2Part2 day2Input)
+  day3Input <- readFile "./input/day3.txt"
+  putStrLn $ "Day 3 Part 1: " ++ show (day3Part1 day3Input)
 
 trim :: String -> String
 trim = unpack . strip . pack
@@ -36,3 +39,11 @@ day2Part1 = sum . map ((\[l, w, h] -> 2 * l * w + 2 * w * h + 2 * l * h + l * w)
 
 day2Part2 :: String -> Int
 day2Part2 = sum . map ((\[l, w, h] -> l * w * h + 2 * (l + w)) . sort . stringToNumberList 'x') . lines . trim
+
+day3Part1 :: String -> Int
+day3Part1 = size . fromList . scanl (\(x, y) c -> case c of
+  '^' -> (x, y - 1)
+  'v' -> (x, y + 1)
+  '<' -> (x - 1, y)
+  '>' -> (x + 1, y)
+  _ -> (x, y)) (0 :: Int, 0 :: Int) . trim
