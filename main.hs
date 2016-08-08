@@ -41,9 +41,12 @@ day2Part2 :: String -> Int
 day2Part2 = sum . map ((\[l, w, h] -> l * w * h + 2 * (l + w)) . sort . stringToNumberList 'x') . lines . trim
 
 day3Part1 :: String -> Int
-day3Part1 = size . fromList . scanl (\(x, y) c -> case c of
-  '^' -> (x, y - 1)
-  'v' -> (x, y + 1)
-  '<' -> (x - 1, y)
-  '>' -> (x + 1, y)
-  _ -> (x, y)) (0 :: Int, 0 :: Int) . trim
+day3Part1 = size . fromList . scanl move (0, 0) . trim
+  where
+    move :: (Int, Int) -> Char -> (Int, Int)
+    move (x, y) c = case c of
+      '^' -> (x, y - 1)
+      'v' -> (x, y + 1)
+      '<' -> (x - 1, y)
+      '>' -> (x + 1, y)
+      _ -> (x, y)
