@@ -16,26 +16,23 @@ main = do
 trim :: String -> String
 trim = unpack . strip . pack
 
+splitOn :: Eq a => a -> [a] -> [[a]]
+splitOn _ [] = []
+splitOn item list = front : splitOn item (drop (1 + length front) list)
+  where
+    front = takeWhile (/= item) list
+
+stringToNumberList :: Char -> String -> [Int]
+stringToNumberList splitChar = map (\x -> read x :: Int) . splitOn splitChar
+
 day1Part1 :: String -> Int
 day1Part1 = foldl (\acc c -> if c == ')' then acc - 1 else acc + 1) 0 . trim
 
 day1Part2 :: String -> Int
-day1Part2 = fromMaybe 0 . elemIndex (negate 1) . scanl (\acc c -> if c == ')' then acc - 1 else acc + 1) 0 . trim
+day1Part2 = fromMaybe 0 . elemIndex (negate 1) . scanl (\acc c -> if c == ')' then acc - 1 else acc + 1) (0 :: Int) . trim
 
 day2Part1 :: String -> Int
-day2Part1 = sum . map ((\[l, w, h] -> 2 * l * w + 2 * w * h + 2 * l * h + l * w) . sort . map (\x -> read x :: Int) . splitOn 'x') . lines . trim
-  where
-    splitOn :: Eq a => a -> [a] -> [[a]]
-    splitOn _ [] = []
-    splitOn item list = front : splitOn item (drop (1 + length front) list)
-      where
-        front = takeWhile (/= item) list
+day2Part1 = sum . map ((\[l, w, h] -> 2 * l * w + 2 * w * h + 2 * l * h + l * w) . sort . stringToNumberList 'x') . lines . trim
 
 day2Part2 :: String -> Int
-day2Part2 = sum . map ((\[l, w, h] -> l * w * h + 2 * (l + w)) . sort . map (\x -> read x :: Int) . splitOn 'x') . lines . trim
-  where
-    splitOn :: Eq a => a -> [a] -> [[a]]
-    splitOn _ [] = []
-    splitOn item list = front : splitOn item (drop (1 + length front) list)
-      where
-        front = takeWhile (/= item) list
+day2Part2 = sum . map ((\[l, w, h] -> l * w * h + 2 * (l + w)) . sort . stringToNumberList 'x') . lines . trim
