@@ -20,6 +20,7 @@ executable advent-haskell
   build-depends:
     base,
     text,
-    containers
+    containers,
+    array
   -- hs-source-dirs:
   default-language:    Haskell2010

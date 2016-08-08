@@ -1,9 +1,10 @@
 module Main where
 
 import Data.Text (strip, unpack, pack)
-import Data.List (elemIndex, sort)
+import Data.List (elemIndex, sort, partition)
 import Data.Set (fromList, size)
 import Data.Maybe (fromMaybe)
+import Data.Array (Array, assocs, listArray)
 
 main :: IO ()
 main = do
@@ -15,6 +16,7 @@ main = do
   putStrLn $ "Day 2 Part 2: " ++ show (day2Part2 day2Input)
   day3Input <- readFile "./input/day3.txt"
   putStrLn $ "Day 3 Part 1: " ++ show (day3Part1 day3Input)
+  putStrLn $ "Day 3 Part 2: " ++ show (day3Part2 day3Input)
 
 trim :: String -> String
 trim = unpack . strip . pack
@@ -50,3 +52,23 @@ day3Part1 = size . fromList . scanl move (0, 0) . trim
       '<' -> (x - 1, y)
       '>' -> (x + 1, y)
       _ -> (x, y)
+
+day3Part2 :: String -> Int
+day3Part2 = size . fromList . concatMap (scanl move (0, 0) . map snd) . tupToList . partition everyOther . assocs . indexedInput . trim
+  where
+    move :: (Int, Int) -> Char -> (Int, Int)
+    move (x, y) c = case c of
+      '^' -> (x, y - 1)
+      'v' -> (x, y + 1)
+      '<' -> (x - 1, y)
+      '>' -> (x + 1, y)
+      _ -> (x, y)
+
+    indexedInput :: String -> Array Int Char
+    indexedInput str = listArray (0, length str - 1) str
+
+    tupToList :: ([a], [a]) -> [[a]]
+    tupToList tup = [fst tup, snd tup]
+
+    everyOther :: (Int, a) -> Bool
+    everyOther (i, _) = i `mod` 2 == 0
