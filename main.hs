@@ -5,6 +5,7 @@ import Data.List (elemIndex, sort, partition, find, isPrefixOf)
 import Data.Set (fromList, size)
 import Data.Maybe (fromMaybe)
 import Data.Array (Array, assocs, listArray)
+import Control.Arrow ((&&&))
 import qualified Data.Hash.MD5 as M
 
 main :: IO ()
@@ -78,7 +79,7 @@ day3Part2 = size . fromList . concatMap (scanl move (0, 0) . map snd) . tupToLis
     everyOther (i, _) = i `mod` 2 == 0
 
 day4Part1 :: String -> Int
-day4Part1 input = snd . fromMaybe ("", 0) . find (isPrefixOf "00000" . fst) $ map (\x -> (M.md5s . M.Str . (++) input $ show x, x)) ([1..] :: [Int])
+day4Part1 input = snd . fromMaybe ("", 0) . find (isPrefixOf "00000" . fst) $ map (M.md5s . M.Str . (++) input . show &&& id) ([1..] :: [Int])
 
 day4Part2 :: String -> Int
-day4Part2 input = snd . fromMaybe ("", 0) . find (isPrefixOf "000000" . fst) $ map (\x -> (M.md5s . M.Str . (++) input $ show x, x)) ([1..] :: [Int])
+day4Part2 input = snd . fromMaybe ("", 0) . find (isPrefixOf "000000" . fst) $ map (M.md5s . M.Str . (++) input . show &&& id) ([1..] :: [Int])
