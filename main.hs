@@ -1,10 +1,11 @@
 module Main where
 
 import Data.Text (strip, unpack, pack)
-import Data.List (elemIndex, sort, partition)
+import Data.List (elemIndex, sort, partition, find, isPrefixOf)
 import Data.Set (fromList, size)
 import Data.Maybe (fromMaybe)
 import Data.Array (Array, assocs, listArray)
+import qualified Data.Hash.MD5 as M
 
 main :: IO ()
 main = do
@@ -17,6 +18,9 @@ main = do
   day3Input <- readFile "./input/day3.txt"
   putStrLn $ "Day 3 Part 1: " ++ show (day3Part1 day3Input)
   putStrLn $ "Day 3 Part 2: " ++ show (day3Part2 day3Input)
+  -- no day4.txt file
+  putStrLn $ "Day 4 Part 1: " ++ show (day4Part1 "iwrupvqb")
+  putStrLn $ "Day 4 Part 2: " ++ show (day4Part2 "iwrupvqb")
 
 trim :: String -> String
 trim = unpack . strip . pack
@@ -72,3 +76,9 @@ day3Part2 = size . fromList . concatMap (scanl move (0, 0) . map snd) . tupToLis
 
     everyOther :: (Int, a) -> Bool
     everyOther (i, _) = i `mod` 2 == 0
+
+day4Part1 :: String -> Int
+day4Part1 input = snd . fromMaybe ("", 0) . find (isPrefixOf "00000" . fst) $ map (\x -> (M.md5s . M.Str . (++) input $ show x, x)) ([1..] :: [Int])
+
+day4Part2 :: String -> Int
+day4Part2 input = snd . fromMaybe ("", 0) . find (isPrefixOf "000000" . fst) $ map (\x -> (M.md5s . M.Str . (++) input $ show x, x)) ([1..] :: [Int])
