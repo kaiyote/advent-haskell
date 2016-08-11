@@ -6,6 +6,7 @@ import Data.Set (fromList, size)
 import Data.Maybe (fromMaybe)
 import Data.Array (Array, assocs, listArray)
 import Control.Arrow ((&&&))
+import Text.Regex.PCRE ((=~))
 import qualified Data.Hash.MD5 as M
 
 main :: IO ()
@@ -19,9 +20,13 @@ main = do
   day3Input <- readFile "./input/day3.txt"
   putStrLn $ "Day 3 Part 1: " ++ show (day3Part1 day3Input)
   putStrLn $ "Day 3 Part 2: " ++ show (day3Part2 day3Input)
-  -- no day4.txt file
-  putStrLn $ "Day 4 Part 1: " ++ show (day4Part1 "iwrupvqb")
-  putStrLn $ "Day 4 Part 2: " ++ show (day4Part2 "iwrupvqb")
+  {-putStrLn $ "Day 4 Part 1: " ++ show (day4Part1 day4Input)
+  putStrLn $ "Day 4 Part 2: " ++ show (day4Part2 day4Input)-}
+  day5Input <- readFile "./input/day5.txt"
+  putStrLn $ "Day 5 Part 1: " ++ show (day5Part1 day5Input)
+  putStrLn $ "Day 5 Part 2: " ++ show (day5Part2 day5Input)
+  {-where
+    day4Input = "iwrupvqb"-}
 
 trim :: String -> String
 trim = unpack . strip . pack
@@ -83,3 +88,30 @@ day4Part1 input = snd . fromMaybe ("", 0) . find (isPrefixOf "00000" . fst) $ ma
 
 day4Part2 :: String -> Int
 day4Part2 input = snd . fromMaybe ("", 0) . find (isPrefixOf "000000" . fst) $ map (M.md5s . M.Str . (++) input . show &&& id) ([1..] :: [Int])
+
+day5Part1 :: String -> Int
+day5Part1 = length . filter isGood . lines . trim
+  where
+    isGood :: String -> Bool
+    isGood line = all ($ line) [threeVowels, doubleLetter, noBadString]
+
+    threeVowels :: String -> Bool
+    threeVowels = flip (=~) "[aeiou].*[aeiou].*[aeiou]"
+
+    doubleLetter :: String -> Bool
+    doubleLetter = flip (=~) "([a-z])\\1"
+
+    noBadString :: String -> Bool
+    noBadString = not . flip (=~) "(ab|cd|pq|xy)"
+
+day5Part2 :: String -> Int
+day5Part2 = length . filter isGood . lines . trim
+  where
+    isGood :: String -> Bool
+    isGood line = all ($ line) [doublePair, eyePair]
+
+    doublePair :: String -> Bool
+    doublePair = flip (=~) "([a-z])([a-z]).*\\1\\2"
+
+    eyePair :: String -> Bool
+    eyePair = flip (=~) "([a-z])[a-z]\\1"

@@ -22,6 +22,7 @@ executable advent-haskell
     text,
     containers,
     array,
-    MissingH
+    MissingH,
+    regex-pcre-builtin
   -- hs-source-dirs:
   default-language:    Haskell2010
