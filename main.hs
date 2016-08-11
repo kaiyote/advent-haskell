@@ -7,6 +7,7 @@ import Data.Maybe (fromMaybe)
 import Data.Array (Array, assocs, listArray, accum)
 import Control.Arrow ((&&&))
 import Text.Regex.PCRE ((=~))
+import qualified Data.Map as Map
 import qualified Data.Hash.MD5 as M
 
 main :: IO ()
@@ -28,6 +29,9 @@ main = do
   day6Input <- readFile "./input/day6.txt"
   putStrLn $ "Day 6 Part 1: " ++ show (day6Part1 day6Input)
   putStrLn $ "Day 6 Part 2: " ++ show (day6Part2 day6Input)
+  day7Input <- readFile "./input/day7.txt"
+  putStrLn $ "Day 7 Part 1: " ++ show (day7Part1 day7Input)
+  putStrLn $ "Day 7 Part 2: " ++ show (day7Part2 day7Input)
   {-where
     day4Input = "iwrupvqb"-}
 
@@ -151,3 +155,9 @@ day6Part2 = sum . foldl processInstruction emptyLightList . map words . lines . 
     processInstruction arr [_, "off", origin, "through", endpoint] = changeRange (\e _ -> max 0 $ e - 1) origin endpoint arr
     processInstruction arr ["toggle", origin, "through", endpoint] = changeRange (\e _ -> e + 2) origin endpoint arr
     processInstruction arr _ = arr
+
+day7Part1 :: String -> Int
+day7Part1 input = 0
+
+day7Part2 :: String -> Int
+day7Part2 input = 0
