@@ -4,7 +4,7 @@ import Data.Text (strip, unpack, pack)
 import Data.List (elemIndex, sort, partition, find, isPrefixOf)
 import Data.Set (fromList, size)
 import Data.Maybe (fromMaybe)
-import Data.Array (Array, assocs, listArray)
+import Data.Array (Array, assocs, listArray, accum)
 import Control.Arrow ((&&&))
 import Text.Regex.PCRE ((=~))
 import qualified Data.Hash.MD5 as M
@@ -25,6 +25,9 @@ main = do
   day5Input <- readFile "./input/day5.txt"
   putStrLn $ "Day 5 Part 1: " ++ show (day5Part1 day5Input)
   putStrLn $ "Day 5 Part 2: " ++ show (day5Part2 day5Input)
+  day6Input <- readFile "./input/day6.txt"
+  putStrLn $ "Day 6 Part 1: " ++ show (day6Part1 day6Input)
+  putStrLn $ "Day 6 Part 2: " ++ show (day6Part2 day6Input)
   {-where
     day4Input = "iwrupvqb"-}
 
@@ -39,6 +42,9 @@ splitOn item list = front : splitOn item (drop (1 + length front) list)
 
 stringToNumberList :: Char -> String -> [Int]
 stringToNumberList splitChar = map (\x -> read x :: Int) . splitOn splitChar
+
+commaStringToTuple :: String -> Point
+commaStringToTuple = (\x -> (head x, x !! 1)) . map (\x -> read x :: Int) . splitOn ','
 
 day1Part1 :: String -> Int
 day1Part1 = foldl (\acc c -> if c == ')' then acc - 1 else acc + 1) 0 . trim
@@ -115,3 +121,33 @@ day5Part2 = length . filter isGood . lines . trim
 
     eyePair :: String -> Bool
     eyePair = flip (=~) "([a-z])[a-z]\\1"
+
+day6Part1 :: String -> Int
+day6Part1 = sum . foldl processInstruction emptyLightList . map words . lines . trim
+  where
+    processInstruction :: LightArray -> [String] -> LightArray
+    processInstruction arr [_, "on", origin, "through", endpoint] = changeRange (\_ _ -> 1) origin endpoint arr
+    processInstruction arr [_, "off", origin, "through", endpoint] = changeRange (\_ _ -> 0) origin endpoint arr
+    processInstruction arr ["toggle", origin, "through", endpoint] = changeRange (\e _ -> if e == 1 then 0 else 1) origin endpoint arr
+    processInstruction arr _ = arr
+
+type LightArray = Array Point Int
+type Point = (Int, Int)
+
+emptyLightList :: LightArray
+emptyLightList = listArray ((0,0), (999,999)) $ replicate 1000000 0
+
+changeRange :: (Int -> Int -> Int) -> String -> String -> LightArray -> LightArray
+changeRange f origin endpoint arr = accum f arr [((z, w), 1) | z <- [x..x'], w <- [y..y']]
+  where
+    (x, y) = commaStringToTuple origin
+    (x', y') = commaStringToTuple endpoint
+
+day6Part2 :: String -> Int
+day6Part2 = sum . foldl processInstruction emptyLightList . map words . lines . trim
+  where
+    processInstruction :: LightArray -> [String] -> LightArray
+    processInstruction arr [_, "on", origin, "through", endpoint] = changeRange (\e _ -> e + 1) origin endpoint arr
+    processInstruction arr [_, "off", origin, "through", endpoint] = changeRange (\e _ -> max 0 $ e - 1) origin endpoint arr
+    processInstruction arr ["toggle", origin, "through", endpoint] = changeRange (\e _ -> e + 2) origin endpoint arr
+    processInstruction arr _ = arr
