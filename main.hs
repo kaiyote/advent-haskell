@@ -21,7 +21,8 @@ main = do
   day3Input <- readFile "./input/day3.txt"
   putStrLn $ "Day 3 Part 1: " ++ show (day3Part1 day3Input)
   putStrLn $ "Day 3 Part 2: " ++ show (day3Part2 day3Input)
-  {-putStrLn $ "Day 4 Part 1: " ++ show (day4Part1 day4Input)
+  {-let day4Input = "iwrupvqb"
+  putStrLn $ "Day 4 Part 1: " ++ show (day4Part1 day4Input)
   putStrLn $ "Day 4 Part 2: " ++ show (day4Part2 day4Input)-}
   day5Input <- readFile "./input/day5.txt"
   putStrLn $ "Day 5 Part 1: " ++ show (day5Part1 day5Input)
@@ -32,8 +33,6 @@ main = do
   day7Input <- readFile "./input/day7.txt"
   putStrLn $ "Day 7 Part 1: " ++ show (day7Part1 day7Input)
   putStrLn $ "Day 7 Part 2: " ++ show (day7Part2 day7Input)
-  {-where
-    day4Input = "iwrupvqb"-}
 
 trim :: String -> String
 trim = unpack . strip . pack
