@@ -7,6 +7,8 @@ import Data.Maybe (fromMaybe)
 import Data.Array (Array, assocs, listArray, accum)
 import Control.Arrow ((&&&))
 import Text.Regex.PCRE ((=~))
+import Data.Word
+import Data.Bits
 import qualified Data.Map as Map
 import qualified Data.Hash.MD5 as M
 
@@ -27,9 +29,9 @@ main = do
   day5Input <- readFile "./input/day5.txt"
   putStrLn $ "Day 5 Part 1: " ++ show (day5Part1 day5Input)
   putStrLn $ "Day 5 Part 2: " ++ show (day5Part2 day5Input)
-  day6Input <- readFile "./input/day6.txt"
+  {-day6Input <- readFile "./input/day6.txt"
   putStrLn $ "Day 6 Part 1: " ++ show (day6Part1 day6Input)
-  putStrLn $ "Day 6 Part 2: " ++ show (day6Part2 day6Input)
+  putStrLn $ "Day 6 Part 2: " ++ show (day6Part2 day6Input)-}
   day7Input <- readFile "./input/day7.txt"
   putStrLn $ "Day 7 Part 1: " ++ show (day7Part1 day7Input)
   putStrLn $ "Day 7 Part 2: " ++ show (day7Part2 day7Input)
@@ -156,7 +158,57 @@ day6Part2 = sum . foldl processInstruction emptyLightList . map words . lines . 
     processInstruction arr _ = arr
 
 day7Part1 :: String -> Int
-day7Part1 input = 0
+day7Part1 = fromIntegral . fromMaybe 0 . Map.lookup "a" . processInput Map.empty . map words . lines . trim
+
+processInput :: Map.Map String Word16 -> [ [ String ] ] -> Map.Map String Word16
+processInput m [] = m
+processInput dict arr = processInput dict' $ filter (isNotDone dict') arr
+  where
+    dict' = foldl processLine dict arr
+
+processLine :: Map.Map String Word16 -> [String] -> Map.Map String Word16
+processLine dict ["NOT", key', "->", key] = conditionalInsert key key' complement dict
+processLine dict [num, "->", key] = conditionalInsert key num id dict
+processLine dict [key', "AND", key'', "->", key] = conditionalInsert' key key' key'' (.&.) dict
+processLine dict [key', "OR", key'', "->", key] = conditionalInsert' key key' key'' (.|.) dict
+processLine dict [key', "LSHIFT", num, "->", key] = conditionalInsert key key' (`shiftL` read num) dict
+processLine dict [key', "RSHIFT", num, "->", key] = conditionalInsert key key' (`shiftR` read num) dict
+processLine dict _ = dict
+
+conditionalInsert :: String -> String -> (Word16 -> Word16) -> Map.Map String Word16 -> Map.Map String Word16
+conditionalInsert key lookup' op dict =
+  case Map.lookup key dict of
+    Just _ -> dict
+    Nothing ->
+      if null (reads lookup' :: [(Word16, String)])
+        then case Map.lookup lookup' dict of
+          Nothing -> dict
+          Just num -> Map.insert key (op num) dict
+        else Map.insert key (op $ read lookup') dict
+
+conditionalInsert' :: String -> String -> String -> (Word16 -> Word16 -> Word16) -> Map.Map String Word16 -> Map.Map String Word16
+conditionalInsert' key lookupL lookupR op dict =
+  case Map.lookup key dict of
+    Just _ -> dict
+    Nothing | null (reads lookupL :: [(Word16, String)]) ->
+                case Map.lookup lookupL dict of
+                    Nothing -> dict
+                    Just numL ->
+                      if null (reads lookupR :: [(Word16, String)])
+                        then case Map.lookup lookupR dict of
+                          Nothing -> dict
+                          Just numR -> Map.insert key (op numL numR) dict
+                        else Map.insert key (op numL $ read lookupR) dict
+            | null (reads lookupR :: [(Word16, String)]) ->
+                case Map.lookup lookupR dict of
+                  Nothing -> dict
+                  Just numR -> Map.insert key (op (read lookupL) numR) dict
+            | otherwise -> Map.insert key (op (read lookupL) $ read lookupR) dict
+
+isNotDone :: Map.Map String Word16 -> [String] -> Bool
+isNotDone dict line = case Map.lookup (last line) dict of
+  Nothing -> True
+  Just _ -> False
 
 day7Part2 :: String -> Int
-day7Part2 input = 0
+day7Part2 input = fromIntegral . fromMaybe 0 . Map.lookup "a" . processInput (Map.singleton "b" $ fromInteger $ toInteger $ day7Part1 input) . map words . lines $ trim input
