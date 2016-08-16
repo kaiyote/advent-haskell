@@ -7,6 +7,7 @@ import Data.Maybe (fromMaybe)
 import Data.Array (Array, assocs, listArray, accum)
 import Control.Arrow ((&&&))
 import Text.Regex.PCRE ((=~))
+import Text.Regex (subRegex, mkRegex)
 import Data.Word
 import Data.Bits
 import qualified Data.Map as Map
@@ -35,6 +36,9 @@ main = do
   day7Input <- readFile "./input/day7.txt"
   putStrLn $ "Day 7 Part 1: " ++ show (day7Part1 day7Input)
   putStrLn $ "Day 7 Part 2: " ++ show (day7Part2 day7Input)
+  day8Input <- readFile "./input/day8.txt"
+  putStrLn $ "Day 8 Part 1: " ++ show (day8Part1 day8Input)
+  putStrLn $ "Day 8 Part 2: " ++ show (day8Part2 day8Input)
 
 trim :: String -> String
 trim = unpack . strip . pack
@@ -211,4 +215,19 @@ isNotDone dict line = case Map.lookup (last line) dict of
   Just _ -> False
 
 day7Part2 :: String -> Int
-day7Part2 input = fromIntegral . fromMaybe 0 . Map.lookup "a" . processInput (Map.singleton "b" $ fromInteger $ toInteger $ day7Part1 input) . map words . lines $ trim input
+day7Part2 input = fromIntegral . fromMaybe 0 . Map.lookup "a" . processInput (Map.singleton "b" $ fromIntegral $ day7Part1 input) . map words . lines $ trim input
+
+day8Part1 :: String -> Int
+day8Part1 input = initialLength input - (sum . map (length . replaceFunc) . lines $ trim input)
+  where
+    replaceFunc :: String -> String
+    replaceFunc = flip (subRegex (mkRegex "\\\\\\\\")) "|" . flip (subRegex (mkRegex "\\\\x[a-f0-9]{2}")) "|" . flip (subRegex (mkRegex "\\\\\"")) "|" . init . tail
+
+initialLength :: String -> Int
+initialLength = sum . map length . lines . trim
+
+day8Part2 :: String -> Int
+day8Part2 input = (sum . map (length . (++ "||||") . replaceFunc) . lines $ trim input) - initialLength input
+  where
+    replaceFunc :: String -> String
+    replaceFunc = flip (subRegex (mkRegex "\\\\\\\\")) "||||" . flip (subRegex (mkRegex "\\\\x[a-f0-9]{2}")) "||xaa" . flip (subRegex (mkRegex "\\\\\"")) "|||\""
